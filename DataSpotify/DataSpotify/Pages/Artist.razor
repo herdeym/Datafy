@@ -182,19 +182,19 @@
         toptracks = await API.S.GetArtistsTopTracksAsync(ID, "HU");
         topTracks = toptracks.Tracks;
         albums = await API.S.GetArtistsAlbumsAsync(ID, SpotifyAPI.Web.Enums.AlbumType.Some, 50, 0, "HU");
+
+
         simpleAlbums = albums.Items.ToList();
         await GetAlbumTracks(simpleAlbums.First());
-
-        foreach (var album in albums.Items)
-        {
+        
+        foreach(var album in simpleAlbums){
             activities.Add(new ActivityItem
-            {
-                Count = album.TotalTracks,
-                Year = album.ReleaseDate
-            });
-
-
+                {
+                    Count = album.TotalTracks,
+                    Year = album.ReleaseDate
+                });
         }
+
         activities = activities.OrderBy(a => a.Year).ToList();
         //Console.WriteLine(activities.Count());
         activitiesLoaded = true;

@@ -2290,8 +2290,8 @@
     },
     "SpotifyAPI.Web/1.0.0": {
       "type": "project",
-      "path": "../../../splaylist/SpotifyAPI-NET/SpotifyAPI.Web/SpotifyAPI.Web.csproj",
-      "msbuildProject": "../../../splaylist/SpotifyAPI-NET/SpotifyAPI.Web/SpotifyAPI.Web.csproj"
+      "path": "../../SpotifyAPI-NET/SpotifyAPI.Web/SpotifyAPI.Web.csproj",
+      "msbuildProject": "../../SpotifyAPI-NET/SpotifyAPI.Web/SpotifyAPI.Web.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -2314,11 +2314,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\BME\\onlab_working\\onlab\\DS 3_2 másolata\\DataSpotify\\DataSpotify\\DataSpotify.csproj",
+      "projectUniqueName": "E:\\BME\\szakdolgozat\\Code\\Datafy\\DataSpotify\\DataSpotify\\DataSpotify.csproj",
       "projectName": "DataSpotify",
-      "projectPath": "E:\\BME\\onlab_working\\onlab\\DS 3_2 másolata\\DataSpotify\\DataSpotify\\DataSpotify.csproj",
+      "projectPath": "E:\\BME\\szakdolgozat\\Code\\Datafy\\DataSpotify\\DataSpotify\\DataSpotify.csproj",
       "packagesPath": "C:\\Users\\Marci\\.nuget\\packages\\",
-      "outputPath": "E:\\BME\\onlab_working\\onlab\\DS 3_2 másolata\\DataSpotify\\DataSpotify\\obj\\",
+      "outputPath": "E:\\BME\\szakdolgozat\\Code\\Datafy\\DataSpotify\\DataSpotify\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Microsoft\\Xamarin\\NuGet\\"
@@ -2339,8 +2339,8 @@
       "frameworks": {
         "netstandard2.1": {
           "projectReferences": {
-            "E:\\BME\\onlab_working\\onlab\\splaylist\\SpotifyAPI-NET\\SpotifyAPI.Web\\SpotifyAPI.Web.csproj": {
-              "projectPath": "E:\\BME\\onlab_working\\onlab\\splaylist\\SpotifyAPI-NET\\SpotifyAPI.Web\\SpotifyAPI.Web.csproj"
+            "E:\\BME\\szakdolgozat\\Code\\Datafy\\SpotifyAPI-NET\\SpotifyAPI.Web\\SpotifyAPI.Web.csproj": {
+              "projectPath": "E:\\BME\\szakdolgozat\\Code\\Datafy\\SpotifyAPI-NET\\SpotifyAPI.Web\\SpotifyAPI.Web.csproj"
             }
           }
         }

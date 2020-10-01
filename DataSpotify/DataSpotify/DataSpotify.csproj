@@ -17,6 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\splaylist\SpotifyAPI-NET\SpotifyAPI.Web\SpotifyAPI.Web.csproj" />
+    <ProjectReference Include="..\..\SpotifyAPI-NET\SpotifyAPI.Web\SpotifyAPI.Web.csproj" />
   </ItemGroup>
 </Project>

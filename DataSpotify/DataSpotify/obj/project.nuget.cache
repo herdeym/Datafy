@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "BFwrKlMtf0LtOHDy+KZe5Syz2USHBp7P4vvdMwc47Z34ud+CSIE6VCQWTAeSoBdtkekjudjRru+lCj8aUrQIvg==",
+  "dgSpecHash": "xcTWI821tMi2gSv2ULSDzPLARbsgLcMsyh+riNpUNzjTpU29vAowyI5/7ccvTPQ6qRZk5hOakLYiLzBErQGUQw==",
   "success": true,
-  "projectFilePath": "E:\\BME\\onlab_working\\onlab\\DS 3_2 másolata\\DataSpotify\\DataSpotify\\DataSpotify.csproj",
+  "projectFilePath": "E:\\BME\\szakdolgozat\\Code\\Datafy\\DataSpotify\\DataSpotify\\DataSpotify.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Marci\\.nuget\\packages\\blazored.localstorage\\2.1.5\\blazored.localstorage.2.1.5.nupkg.sha512",
     "C:\\Users\\Marci\\.nuget\\packages\\devexpress.blazor\\19.2.4\\devexpress.blazor.19.2.4.nupkg.sha512",
