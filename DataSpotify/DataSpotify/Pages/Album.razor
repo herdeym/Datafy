@@ -1,0 +1,99 @@
+﻿@page "/album/{id}"
+@using SpotifyAPI.Web.Models
+@using Helpers
+
+@inject API api 
+@inject NavigationManager nm
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<div class="row">
+    <div class="col-md-auto">
+        <h1>Album: @albumTitle</h1>
+        <a href="/artist/@artistUrl">By: @artistName</a>
+        <p>@releasedate</p>
+        <img src=@imgUrl width="300" height="300">
+    </div>
+    <div class="col">
+        <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="false" PageSize="@trackCount"
+                    AllowSorting="true" Data="@albumtracks" TItem="SimpleTrack" ColumnWidth="200px">
+            <Columns>
+                <RadzenGridColumn Width="200px" TItem="SimpleTrack" Property="Name" Title="Title" />
+                <RadzenGridColumn Width="200px"TItem="SimpleTrack" Title="Artists">
+                    <Template Context="data">
+                        @api.getArtistsInString(data.Artists)
+                    </Template>
+                </RadzenGridColumn>
+            </Columns>
+        </RadzenGrid>
+    </div>
+</div>
+
+
+
+<h1>Other albums from artist: </h1>
+
+<RadzenDataList WrapItems="true" AllowPaging="true" Data="@albums" TItem="SimpleAlbum" PageSize="3">
+    <Template Context="album">
+        <RadzenCard >
+            <div class="row">
+                <div class="col-md-auto">
+                    <div>Title:</div>
+                    <b>@album.Name</b>
+                    <div style="margin-top:20px">Release Date:</div>
+                    <b>@album.ReleaseDate</b>
+                </div>
+            </div>
+        </RadzenCard>
+    </Template>
+</RadzenDataList>
+
+@code{
+    [Parameter]
+    public string ID { get; set; }
+
+    public FullAlbum album;
+    public Paging<SimpleTrack> tracks;
+    public IEnumerable<SimpleTrack> albumtracks;
+    public List<Image> images;
+    public string imgUrl = "";
+    public string releasedate = "";
+    public string albumTitle = "";
+    public string artistName = "";
+    public string artistUrl = "";
+    public int trackCount=1;
+    public int imgWidth, imgHeight;
+    public Paging<SimpleAlbum> artistalbums;
+    public IEnumerable<SimpleAlbum> albums;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!api.IsAuthenticated())
+        {
+            string at = await localStorage.GetItemAsync<string>("AccessToken");
+            string tt = await localStorage.GetItemAsync<string>("TokenType");
+            await api.Authenticate(at, tt);
+        }
+
+        album = await API.S.GetAlbumAsync(ID);
+        tracks = album.Tracks;
+        albumtracks = tracks.Items.ToList();
+        trackCount = album.TotalTracks;
+        releasedate = album.ReleaseDate;
+        albumTitle = album.Name;
+        artistName = album.Artists.ElementAt(0).Name;
+        artistUrl = album.Artists.ElementAt(0).Id;
+        artistalbums = await API.S.GetArtistsAlbumsAsync(album.Artists.ElementAt(0).Id);
+        for(int i =0; i<artistalbums.Items.Count();i++)
+        {
+            if(artistalbums.Items.ElementAt(i).Name == albumTitle)
+            {
+                artistalbums.Items.Remove(artistalbums.Items.ElementAt(i));
+            }
+        }
+        albums = artistalbums.Items.ToList();
+        images = album.Images;
+        imgUrl = images.ElementAt(0).Url;
+        imgWidth = images.ElementAt(0).Width / 2;
+        imgHeight = images.ElementAt(0).Height/2;
+    }
+}

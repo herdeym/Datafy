@@ -1,0 +1,88 @@
+﻿@page "/home"
+@using Helpers
+@using SpotifyAPI.Web.Models
+@inject API api 
+@inject NavigationManager nm
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+    <NeedsAuthentication Silent="false">
+        <h1>@username</h1>
+        <h1>Your favourite tracks in the past 4 weeks: </h1>
+
+        <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="10"
+                    AllowSorting="true" Data="@tracks" TItem="FullTrack" ColumnWidth="200px" RowDoubleClick="trackClicked">
+            <Columns>
+                <RadzenGridColumn TItem="FullTrack" Property="Name" Title="Title" />
+                <RadzenGridColumn TItem="FullTrack" Title="Artists">
+                    <Template Context="data">
+                        @api.getArtistsInString(data.Artists)
+                    </Template>
+                </RadzenGridColumn>
+                <RadzenGridColumn TItem="FullTrack" Property="Album.Name" Title="Album" />
+            </Columns>
+        </RadzenGrid>
+
+        <h1>The artists you listened to the most in the past 4 weeks: </h1>
+
+        <RadzenDataList WrapItems="true" AllowPaging="true" Data="@artists" TItem="FullArtist" PageSize="12">
+            <Template Context="artist">
+                <RadzenCard Style="width:300px;">
+                    <div>
+                        <a href="/artist/@artist.Id">@artist.Name</a>
+                    </div>
+                    <div>
+                        <img src=@getImg(artist) width="200" height="200" />
+                    </div>
+                </RadzenCard>
+            </Template>
+        </RadzenDataList>
+
+
+    </NeedsAuthentication>
+
+
+
+@code {
+    string username = "";
+    List<string> toptracktitles = new List<string>();
+    Paging<FullTrack> toptracks;
+    IEnumerable<FullTrack> tracks;
+    Paging<FullArtist> topartists;
+    IEnumerable<FullArtist> artists;
+
+    string apiAuth = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!api.IsAuthenticated())
+        {
+            string at = await localStorage.GetItemAsync<string>("AccessToken");
+            string tt = await localStorage.GetItemAsync<string>("TokenType");
+            Console.WriteLine(at);
+            Console.WriteLine(tt);
+            await api.Authenticate(at, tt);
+        }
+        else
+            Console.WriteLine("api hitelesítve");
+        username = api.UserProfile.DisplayName;
+
+        toptracks =  await API.S.GetUsersTopTracksAsync(SpotifyAPI.Web.Enums.TimeRangeType.ShortTerm);
+        tracks = toptracks.Items.ToList();
+
+        topartists = await API.S.GetUsersTopArtistsAsync(SpotifyAPI.Web.Enums.TimeRangeType.ShortTerm);
+        artists = topartists.Items.ToList();
+    }
+
+    void trackClicked(FullTrack t)
+    {
+        nm.NavigateTo("album/" + t.Album.Id);
+    }
+
+    public string getImg(FullArtist a)
+    {
+        if (a.Images.Count() == 0)
+            return "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1200px-No_image_available.svg.png";
+        return a.Images.First().Url;
+    }
+
+}

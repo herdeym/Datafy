@@ -1,0 +1,49 @@
+﻿@page "/"
+
+@inject NavigationManager nm
+@inject API api
+@inject Blazored.LocalStorage.ILocalStorageService localStorage 
+@using DataSpotify.Helpers
+
+<!-- HTML derived from https://html5up.net/hyperspace -->
+<div id="homepage">
+<div id="wrapper">
+<section id="intro" class="wrapper fullscreen">
+    <div class="inner">
+        <ul class="actions">
+            <li><a href="@Auth.GetLoginLink(nm.BaseUri)" class="button" style="background-color: #1c7d2f;">Log In with Spotify</a></li>
+        </ul>
+
+    </div>
+
+</section>
+
+</div>
+</div>
+
+@code{
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!api.IsAuthenticated())
+        {
+            bool hasKey = await localStorage.ContainKeyAsync("expiresIn");
+            if(hasKey){
+                DateTime loggedIn = await localStorage.GetItemAsync<DateTime>("loggedIn");
+                DateTime currentTime = DateTime.Now;
+                TimeSpan diff = currentTime.Subtract(loggedIn);
+
+                string at = await localStorage.GetItemAsync<string>("AccessToken");
+                string tt = await localStorage.GetItemAsync<string>("TokenType");
+                string expires = await localStorage.GetItemAsync<string>("expiresIn");
+                int expiresInSeconds = Int32.Parse(expires);
+                TimeSpan exp = TimeSpan.FromSeconds(expiresInSeconds);
+                await api.Authenticate(at, tt);
+                if (diff< exp)
+                    nm.NavigateTo("/home");
+            }
+
+        }
+    }
+
+}

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29920.165
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataSpotify", "DataSpotify\DataSpotify.csproj", "{46BB0054-F559-4397-AC03-9A8C6733E04B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpotifyAPI.Web", "..\..\splaylist\SpotifyAPI-NET\SpotifyAPI.Web\SpotifyAPI.Web.csproj", "{5422E879-61D2-4ECB-85CD-22391DA7A188}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{46BB0054-F559-4397-AC03-9A8C6733E04B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46BB0054-F559-4397-AC03-9A8C6733E04B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46BB0054-F559-4397-AC03-9A8C6733E04B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46BB0054-F559-4397-AC03-9A8C6733E04B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5422E879-61D2-4ECB-85CD-22391DA7A188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5422E879-61D2-4ECB-85CD-22391DA7A188}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5422E879-61D2-4ECB-85CD-22391DA7A188}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5422E879-61D2-4ECB-85CD-22391DA7A188}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2CB742EA-38E8-4E98-A8C0-AE427144F0D6}
+	EndGlobalSection
+EndGlobal

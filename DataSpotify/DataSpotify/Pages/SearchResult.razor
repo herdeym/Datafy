@@ -1,0 +1,167 @@
+﻿@page "/search/{query}"
+@using Helpers
+@using SpotifyAPI.Web.Models
+@inject API api
+@inject NavigationManager nm
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+
+<NeedsAuthentication>
+    <RadzenTabs>
+        <Tabs>
+            <RadzenTabsItem Text="Tracks">
+                <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="20"
+                            AllowSorting="true" Data="@tracks" TItem="FullTrack" ColumnWidth="200px" RowDoubleClick="trackClicked">
+                    <Columns>
+                        <RadzenGridColumn TItem="FullTrack" Property="Name" Title="Title" />
+                        <RadzenGridColumn TItem="FullTrack" Title="Artists">
+                            <Template Context="data">
+                                @api.getArtistsInString(data.Artists)
+                            </Template>
+                        </RadzenGridColumn>
+                        <RadzenGridColumn TItem="FullTrack" Property="Album.Name" Title="Album" />
+                    </Columns>
+                </RadzenGrid>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Artists">
+                <RadzenDataList WrapItems="true" AllowPaging="true" Data="@artists" TItem="FullArtist" PageSize="12">
+                    <Template Context="artist">
+                        <RadzenCard Style="width:300px;">
+                            <div>
+                                <a href="/artist/@artist.Id">@artist.Name</a>
+                            </div>
+                            <div>
+                                <img src=@getImg(artist) width="200" height="200" />
+                            </div>
+                        </RadzenCard>
+                    </Template>
+                </RadzenDataList>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Albums">
+                <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="20"
+                            AllowSorting="true" Data="@albums" TItem="SimpleAlbum" ColumnWidth="200px">
+                    <Columns>
+                        <RadzenGridColumn TItem="SimpleAlbum" Property="Name" Title="Title" />
+                        <RadzenGridColumn TItem="SimpleAlbum" Title="Artists">
+                            <Template Context="data">
+                                @api.getArtistsInString(data.Artists)
+                            </Template>
+                        </RadzenGridColumn>
+                        <RadzenGridColumn TItem="SimpleAlbum" Property="ReleaseDate" Title="Release Date" />
+                    </Columns>
+                </RadzenGrid>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Playlists">
+                <div class="row">
+                    <div class="col-md-6">
+                        <RadzenGrid ColumnWidth="200px" AllowFiltering="true" AllowPaging="true" PageSize="10" AllowSorting="true" Data="@playlists" TItem="SimplePlaylist" Value="@selectedPlaylist" RowSelect="@(args => GetPlaylistTracks(args))">
+                            <Columns>
+                                <RadzenGridColumn Width="100px" TItem="SimplePlaylist" Property="Name" Title="Title" />
+                                <RadzenGridColumn Width="200px" TItem="SimplePlaylist" Property="Owner.DisplayName" Title="Owner" />
+                                <RadzenGridColumn Width="150px" TItem="SimplePlaylist" Property="Tracks.Total" Title="Track Count" />
+                            </Columns>
+                        </RadzenGrid>
+                    </div>
+                    <div class="col-md-6">
+                        <RadzenCard Style="margin-bottom:20px">
+                            Playlist:
+                            <b>@selectedPlaylist.Name</b>
+                        </RadzenCard>
+                        <RadzenGrid AllowFiltering="true" AllowPaging="true" AllowSorting="true" Data="@playlistTracks" TItem="PlaylistTrack">
+                            <Columns>
+                                <RadzenGridColumn TItem="PlaylistTrack" Property="Track.Name" Title="Title" />
+                                <RadzenGridColumn TItem="PlaylistTrack" Title="Artists">
+                                    <Template Context="data">
+                                        @api.getArtistsInString(data.Track.Artists)
+                                    </Template>
+                                </RadzenGridColumn>
+                                <RadzenGridColumn TItem="PlaylistTrack" Property="AddedAt" Title="Added at" />
+                            </Columns>
+                        </RadzenGrid>
+                    </div>
+                </div>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+
+</NeedsAuthentication>
+
+
+
+
+@code {
+    [Parameter]
+    public string Query { get; set; }
+
+
+    IEnumerable<FullTrack> tracks;
+    IEnumerable<SimpleAlbum> albums;
+    IEnumerable<FullArtist> artists;
+    IEnumerable<SimplePlaylist> playlists;
+    SearchItem searchResult;
+    SimplePlaylist selectedPlaylist;
+    IEnumerable<PlaylistTrack> playlistTracks;
+    public string playlistImage = "";
+    public string imageStyle = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!api.IsAuthenticated())
+        {
+            string at = await localStorage.GetItemAsync<string>("AccessToken");
+            string tt = await localStorage.GetItemAsync<string>("TokenType");
+            await api.Authenticate(at, tt);
+        }
+
+        await LoadResult();
+
+    }
+
+    public async Task GetPlaylistTracks(SimplePlaylist playlist)
+    {
+        Paging<PlaylistTrack> result = await API.S.GetPlaylistTracksAsync(playlist.Id);
+        playlistTracks = result.Items.ToList();
+        selectedPlaylist = playlist;
+        //Image img = playlist.Images.ElementAt(1);
+        //playlistImage = img.Url;
+        //mageStyle = "width:" + img.Width.ToString() + "; " + "height:" + img.Height.ToString() + ";";
+
+
+    }
+
+    public string getImg(FullArtist a)
+    {
+        if (a.Images.Count() == 0)
+            return "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1200px-No_image_available.svg.png";
+        return a.Images.First().Url;
+    }
+
+    public async Task LoadResult()
+    {
+        searchResult = await API.S.SearchItemsAsync(Query, SpotifyAPI.Web.Enums.SearchType.All, 50);
+        tracks = searchResult.Tracks.Items.ToList();
+        artists = searchResult.Artists.Items.ToList();
+        albums = searchResult.Albums.Items.ToList();
+        playlists = searchResult.Playlists.Items.ToList();
+        await GetPlaylistTracks(playlists.First());
+    }
+
+
+    void artistClicked(FullArtist a)
+    {
+        nm.NavigateTo("/artist/" + a.Id);
+    }
+
+    void trackClicked(FullTrack t)
+    {
+        nm.NavigateTo("album/" + t.Album.Id);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadResult();
+        this.StateHasChanged();
+    }
+
+
+}

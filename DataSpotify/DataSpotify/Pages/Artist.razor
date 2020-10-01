@@ -1,0 +1,216 @@
+﻿@page "/artist/{id}"
+@using Helpers
+@using SpotifyAPI.Web.Models
+@inject API api
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject NavigationManager nm
+
+<div class="row">
+    <div class="col-md-auto">
+        <h1> @name</h1>
+        <img src=@artistImg class="center" width="300" height="300" />
+    </div>
+    <div class="col">
+        Top tracks:
+        <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="10"
+                    AllowSorting="true" Data="@topTracks" TItem="FullTrack" ColumnWidth="200px">
+            <Columns>
+                <RadzenGridColumn TItem="FullTrack" Property="Name" Title="Title" />
+                <RadzenGridColumn Width="150px" TItem="FullTrack" Title="Artists">
+                    <Template Context="data">
+                        @api.getArtistsInString(data.Artists)
+                    </Template>
+                </RadzenGridColumn>
+                <RadzenGridColumn Width="100px" TItem="FullTrack" Property="Album.Name" Title="Album" />
+            </Columns>
+        </RadzenGrid>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+
+        @if (activitiesLoaded)
+        {
+            <DxChart Data="@activities">
+                <DxChartBarSeries Name="Releases" Filter="@((ActivityItem a) => a != null)"
+                                  ArgumentField="@( a => a.Year)" ValueField="@( a => a.Count)" />
+                <DxChartLegend Position="RelativePosition.Outside" HorizontalAlignment="HorizontalAlignment.Right" />
+                <DxChartArgumentAxis Type="ChartAxisType.Continuous"></DxChartArgumentAxis>
+            </DxChart>
+        }
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-6">
+        Albums:
+        <RadzenGrid ColumnWidth="200px" AllowFiltering="true" AllowPaging="true" PageSize="10" AllowSorting="true" Data="@simpleAlbums" TItem="SimpleAlbum" Value="@selectedAlbum" RowSelect="@(args => GetAlbumTracks(args))">
+            <Columns>
+                <RadzenGridColumn Width="200px" TItem="SimpleAlbum" Property="Name" Title="Title" />
+                <RadzenGridColumn Width="100px" TItem="SimpleAlbum" Title="Artists">
+                    <Template Context="album">
+                        @api.getArtistsInString(album.Artists)
+                    </Template>
+                </RadzenGridColumn>
+                <RadzenGridColumn Width="150px" TItem="SimpleAlbum" Property="AlbumType" Title="Type" />
+                <RadzenGridColumn Width="150px" TItem="SimpleAlbum" Property="ReleaseDate" Title="Release Date" />
+            </Columns>
+        </RadzenGrid>
+    </div>
+    @if (selectedAlbum != null)
+    {
+        <div class="col-md-6">
+            <RadzenCard Style="margin-bottom:20px">
+                <div class="row">
+                    <div class="col-md-auto">
+                        Album:
+                        <br />
+                        <b>@selectedAlbum.Name</b>
+                    </div>
+                    <div class="col-md-auto">
+                        <img class="pull-right"src=@albumImg height="80" width="80" />
+                    </div>
+                </div>
+
+            </RadzenCard>
+            <RadzenGrid AllowFiltering="true" AllowPaging="true" AllowSorting="true" Data="@albumTracks" TItem="SimpleTrack">
+                <Columns>
+                    <RadzenGridColumn TItem="SimpleTrack" Width="50px" Property="DiscNumber" Title="Disc" Visible=@moreDiscs />
+                    <RadzenGridColumn TItem="SimpleTrack" Width="50px" Property="TrackNumber" Title="#" />
+                    <RadzenGridColumn TItem="SimpleTrack" Property="Name" Title="Title" />
+                    <RadzenGridColumn TItem="SimpleTrack" Title="Artists">
+                        <Template Context="data">
+                            @api.getArtistsInString(data.Artists)
+                        </Template>
+                    </RadzenGridColumn>
+                </Columns>
+            </RadzenGrid>
+        </div>
+
+    }
+    <div class="row">
+        <h1>Related artists:</h1>
+        <RadzenDataList WrapItems="true" AllowPaging="true" Data="@relatedArtists" TItem="FullArtist" PageSize="7">
+            <Template Context="artist">
+                <RadzenCard>
+                    <div class="row">
+                        <div class="col-md-auto">
+                            <a href="/artist/@artist.Id">@artist.Name</a>
+                            <img src=@artist.Images.First().Url height="60" width="60" />
+                        </div>
+                    </div>
+                </RadzenCard>
+            </Template>
+        </RadzenDataList>
+    </div>
+
+</div>
+
+
+
+@code {
+    [Parameter]
+    public string ID { get; set; }
+
+    class ActivityItem
+    {
+        public string Year { get; set; }
+        public int Count { get; set; }
+    }
+
+    FullArtist artist;
+    string name = "";
+    string artistImg = "";
+    string albumImg = "";
+    SeveralTracks toptracks;
+    IEnumerable<FullTrack> topTracks;
+    Paging<SimpleAlbum> albums;
+    IEnumerable<SimpleAlbum> simpleAlbums;
+    SimpleAlbum selectedAlbum;
+    SeveralArtists related;
+    IEnumerable<FullArtist> relatedArtists;
+    IEnumerable<SimpleTrack> albumTracks;
+    bool moreDiscs = false;
+    bool activitiesLoaded = false;
+    List<ActivityItem> activities = new List<ActivityItem>();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!api.IsAuthenticated())
+        {
+            string at = await localStorage.GetItemAsync<string>("AccessToken");
+            string tt = await localStorage.GetItemAsync<string>("TokenType");
+            await api.Authenticate(at, tt);
+        }
+
+        await LoadArtist();
+    }
+
+    public async Task GetAlbumTracks(SimpleAlbum album)
+    {
+        selectedAlbum = album;
+        FullAlbum temp = await API.S.GetAlbumAsync(album.Id);
+
+        if (temp.Images.Count() == 0)
+            albumImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1200px-No_image_available.svg.png";
+        else
+            albumImg = temp.Images.First().Url;
+        albumTracks = temp.Tracks.Items.ToList();
+        bool onlyOneDisc = true;
+        foreach (var t in albumTracks)
+        {
+            if (t.DiscNumber > 1)
+                onlyOneDisc = false;
+        }
+        if (!onlyOneDisc)
+            moreDiscs = true;
+        else
+            moreDiscs = false;
+    }
+
+    public async Task LoadArtist()
+    {
+        //activities.Clear();
+        artist = await API.S.GetArtistAsync(ID);
+        name = artist.Name;
+        if (artist.Images.Count() == 0)
+            artistImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1200px-No_image_available.svg.png";
+        else
+            artistImg = artist.Images.First().Url;
+        toptracks = await API.S.GetArtistsTopTracksAsync(ID, "HU");
+        topTracks = toptracks.Tracks;
+        albums = await API.S.GetArtistsAlbumsAsync(ID, SpotifyAPI.Web.Enums.AlbumType.Some, 50, 0, "HU");
+        simpleAlbums = albums.Items.ToList();
+        await GetAlbumTracks(simpleAlbums.First());
+
+        foreach (var album in albums.Items)
+        {
+            activities.Add(new ActivityItem
+            {
+                Count = album.TotalTracks,
+                Year = album.ReleaseDate
+            });
+
+
+        }
+        activities = activities.OrderBy(a => a.Year).ToList();
+        //Console.WriteLine(activities.Count());
+        activitiesLoaded = true;
+        /*foreach (var a in activities)
+        {
+            Console.WriteLine(a.Year);
+        }*/
+
+        related = await API.S.GetRelatedArtistsAsync(artist.Id);
+        relatedArtists = related.Artists;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadArtist();
+        this.StateHasChanged();
+    }
+
+}

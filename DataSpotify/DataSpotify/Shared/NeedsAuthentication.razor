@@ -1,0 +1,24 @@
+﻿@using DataSpotify.Helpers
+@inject API  api
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+
+@if (api.IsAuthenticated())
+{
+    @ChildContent
+}
+else if (!Silent)
+{
+    <h3>You must be logged in to view this page.</h3>
+}
+
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public bool Silent { get; set; }
+
+
+}

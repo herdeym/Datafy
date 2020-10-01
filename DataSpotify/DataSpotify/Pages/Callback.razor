@@ -1,0 +1,46 @@
+﻿@page "/callback"
+
+@using Helpers
+@using SpotifyAPI.Web
+
+@inject NavigationManager UriHelper
+@inject Auth ah
+@inject API  api
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+
+<p>@_loginMessage</p>
+
+
+@code {
+
+    string _loginMessage = "Logging in...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ah.SetLinkParams(UriHelper.Uri))
+        {
+            await api.Authenticate(ah.AccessToken, ah.TokenType);
+
+
+            if (api.IsAuthenticated())
+            {
+                _loginMessage = "Logged in!";
+                // Without this check, navigating to playlists can cause a NullReferenceException
+                await localStorage.SetItemAsync("AccessToken", ah.AccessToken);
+                await localStorage.SetItemAsync("TokenType", ah.TokenType);
+                await localStorage.SetItemAsync("expiresIn", ah.ExpiresIn);
+                DateTime loggedIn = DateTime.Now;
+                await localStorage.SetItemAsync("loggedIn", loggedIn);
+                UriHelper.NavigateTo("home");
+            }
+
+        }
+        else
+        {
+            _loginMessage = "Login Failed...";
+        }
+
+    }
+
+}

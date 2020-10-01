@@ -1,0 +1,33 @@
+﻿@inherits LayoutComponentBase
+@using SpotifyAPI.Web.Models
+@using Helpers
+
+@inject API api
+@inject NavigationManager nm
+<div class="sidebar">
+    <NavMenu />
+</div>
+
+<div class="main">
+    <div class="top-row px-4">
+        <RadzenTextBox Placeholder="Search..." Change="@((args)=>search(args))" Style="margin-bottom: 20px" />
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
+
+@code{
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    public void search(string query)
+    {
+        nm.NavigateTo("search/" + query);
+    }
+}
